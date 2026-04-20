@@ -35,7 +35,11 @@ Detects installed AI CLIs and installs the skill into each.
 
 ## Use in a project
 
-1. Run `/polypad:init` from any agent — creates `.agents/napkin.md`.
+1. Run `/polypad:init` from any agent. You'll be asked which versioning mode to use:
+
+   - **Shared via git (default)** — `.agents/napkin.md` is committed, teammates share context across machines.
+   - **Local only** — `.agents/` is gitignored, each developer has their own napkin.
+
 2. Paste this into your repo's `CLAUDE.md` / `AGENTS.md` / `GEMINI.md`:
 
    ```
@@ -47,6 +51,21 @@ Detects installed AI CLIs and installs the skill into each.
    ```
 
 3. Start working. Agents read the napkin before substantive tasks and write their notes after.
+
+### Which versioning mode should I pick?
+
+- You work alone, across multiple CLIs on the same machine → **local**
+- You work with a team, anyone might open the repo from any machine → **shared**
+- You're not sure → start with **shared** (the default). You can always add `.agents/` to `.gitignore` later.
+
+In shared mode, commit the napkin like any other file:
+
+```bash
+git add .agents/napkin.md
+git commit -m "polypad: update napkin"
+```
+
+Your teammates see your context when they pull.
 
 ## Token economy
 

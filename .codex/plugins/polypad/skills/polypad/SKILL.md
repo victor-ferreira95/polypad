@@ -120,6 +120,18 @@ Files: resources/lang/pt_BR/auth.php
 
 **Narrative section** (below first `---`): append-only blocks. Any agent appends. No agent ever edits a block authored by someone else.
 
+## Versioning modes
+
+Polypad can run in two modes, chosen when `/polypad:init` runs:
+
+**Shared (default):** `.agents/napkin.md` is committed to git, `.agents/.identity.*` is gitignored. Teammates working from different machines see each other's blocks via git pulls. This is the canonical mode for multi-agent async collaboration.
+
+**Local:** `.agents/` is entirely gitignored. Each developer has their own napkin, nothing is committed. Useful when a single developer coordinates multiple AI CLIs on the same machine but does not want the napkin in git history.
+
+When engaging with a napkin, do NOT assume one mode over the other — just read and write normally. The mode is a user choice about git, not about protocol behavior.
+
+If you are engaging in a turn that involves writes and the napkin is inside a git-tracked path, remind the user once per session (only if it comes up naturally in the response): "Note: your napkin is shared via git — remember to commit it periodically so your teammates see the context."
+
 ## Step 4: Before writing, compact your own blocks
 
 Per-author, never cross-author.
