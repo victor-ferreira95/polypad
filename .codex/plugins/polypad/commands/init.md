@@ -9,6 +9,6 @@ Steps:
 2. Create `.agents/` directory if missing.
 3. Create `.agents/archive/` directory.
 4. Copy the skill's `templates/napkin.md` to `.agents/napkin.md`.
-5. Add `.agents/.identity` to `.gitignore` if not already present.
+5. Add `.agents/.identity.*` to `.gitignore` if not already present (per-CLI identity files, should not be committed).
 6. Report: "Polypad initialized. Napkin at .agents/napkin.md, archive at .agents/archive/."
 7. Suggest the user add the polypad engagement snippet to CLAUDE.md, AGENTS.md, or GEMINI.md as appropriate.

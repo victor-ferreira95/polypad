@@ -47,15 +47,28 @@ If yes → **one consolidated block** at the end of the turn, summarizing the tu
 
 Block content should describe the outcome ("implemented X with approach Y, commit Z"), not narrate each tool call ("ran Write on file A, then Edit on file B").
 
-## Step 1: Identify yourself
+## Step 2: Identify yourself
 
-Determine your author tag. Check `.agents/.identity` (one-line file, gitignored). If missing:
+Each CLI uses its own identity file, preventing race conditions when multiple agents run simultaneously in the same repo.
 
-1. Detect from environment: `CLAUDE_CODE=1` → `claude`, `CODEX_CLI=1` → `codex`, `GEMINI_CLI=1` → `gemini`.
-2. If unclear, ask the user once: "Which tag should I use in the polypad? (suggested: claude)"
-3. Save to `.agents/.identity`.
+1. Detect your CLI from environment variables and pick your identity file:
 
-Tags are lowercase slugs: `claude`, `codex`, `gemini`, `cursor`, `claude-opus`, `claude-sonnet`.
+   | Environment variable | Identity file | Default tag |
+   |---|---|---|
+   | `CLAUDE_CODE=1` | `.agents/.identity.claude` | `claude` |
+   | `CODEX_CLI=1` | `.agents/.identity.codex` | `codex` |
+   | `GEMINI_CLI=1` | `.agents/.identity.gemini` | `gemini` |
+   | (none of the above) | `.agents/.identity.<cli>` where `<cli>` is your CLI name in lowercase | prompt the user |
+
+2. Read your identity file:
+   - If it exists, use its single-line content as your author tag for this session.
+   - If it doesn't exist, create it with your default tag (e.g., `echo "claude" > .agents/.identity.claude`). If no default applies, ask the user: "Which tag should I use in the polypad? (suggested based on your CLI)"
+
+3. Use the resulting tag for every block you write and for your header in the napkin. Tags are lowercase slugs: `claude`, `codex`, `gemini`, `cursor`, `claude-opus`, `claude-sonnet`, etc.
+
+**Why per-CLI files:** if two CLIs initialize in parallel (first run on a shared repo), a single shared `.agents/.identity` file would race — one agent could overwrite the other's tag. Per-CLI files make concurrent access safe by construction: each agent only ever writes its own file.
+
+The identity files are gitignored via the `.agents/.identity.*` pattern — each user's local setup decides their tags, nothing is committed.
 
 ## Step 2: Lazy read — headers first
 
