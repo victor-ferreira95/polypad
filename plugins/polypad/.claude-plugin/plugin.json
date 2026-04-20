@@ -1,0 +1,12 @@
+{
+  "name": "polypad",
+  "version": "0.1.0",
+  "description": "Shared append-only napkin for coordinating AI coding agents",
+  "author": {
+    "name": "Victor Ferreira",
+    "url": "https://github.com/victor-ferreira95"
+  },
+  "homepage": "https://github.com/victor-ferreira95/polypad",
+  "license": "MIT",
+  "keywords": ["multi-agent", "collaboration", "shared-context"]
+}

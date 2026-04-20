@@ -1,21 +1,18 @@
 {
   "name": "polypad",
   "owner": {
-    "name": "Victor Ferreira"
-  },
-  "metadata": {
-    "description": "Polypad — shared napkin protocol for multi-agent AI coding workflows",
-    "version": "0.1.0"
+    "name": "Victor Ferreira",
+    "url": "https://github.com/victor-ferreira95"
   },
   "plugins": [
     {
       "name": "polypad",
-      "source": ".",
-      "description": "Universal shared napkin for AI coding agents (Claude, Codex, Gemini, Cursor). Strict write-isolation, per-author compaction, auto-archive.",
+      "source": "./plugins/polypad",
+      "description": "Universal shared napkin for AI coding agents — Claude, Codex, Gemini, and others coordinate via one markdown file",
       "version": "0.1.0",
-      "author": {
-        "name": "Victor Ferreira"
-      }
+      "category": "workflow",
+      "keywords": ["multi-agent", "collaboration", "codex", "shared-context", "napkin"],
+      "strict": false
     }
   ]
 }
