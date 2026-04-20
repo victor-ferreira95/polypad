@@ -1,26 +1,10 @@
 # polypad
 
-Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor, and any other tool following the open SKILL.md spec can read and write the same file — with strict write-isolation so no agent ever overwrites another.
+Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor — all read and write the same `.agents/napkin.md`, with strict write-isolation so no agent ever overwrites another.
 
 **The user orchestrates. Polypad remembers.**
 
-## What it does
-
-You ask Claude to plan a feature. Claude writes its plan into the napkin, under its tag.
-
-You ask Codex to implement it. Codex reads the napkin, implements, writes its own block.
-
-You ask Gemini to translate the UI copy. Gemini reads what both did, translates, logs its work.
-
-Every agent starts each session fully aware of what the others thought, decided, and built — without you having to re-explain anything.
-
-## What it isn't
-
-Not a task manager. Not a delegation protocol. No specs, no tickets, no phases.
-
-It's one markdown file with blocks. That's it.
-
-## Installation
+## Install
 
 ### Claude Code
 
@@ -29,13 +13,7 @@ It's one markdown file with blocks. That's it.
 /plugin menu
 ```
 
-Select `polypad` from the menu, then choose the scope:
-
-- **Install for you (user scope)** — available in all your projects
-- **Install for all collaborators on this repository (project scope)** — committed to the repo, shared with team
-- **Install for you, in this repo only (local scope)** — this repo only, not committed
-
-Restart Claude Code after install.
+Select `polypad`, then choose the scope: user / project / local.
 
 ### Codex CLI
 
@@ -43,17 +21,9 @@ Restart Claude Code after install.
 codex marketplace add victor-ferreira95/polypad
 ```
 
-Then open the plugin directory and install Polypad:
+Then open `/plugins` inside Codex, select Polypad, and install.
 
-```
-/plugins
-```
-
-Select `polypad` and install. Restart Codex after install.
-
-### Manual install (all CLIs, without marketplace)
-
-If you prefer to install as a raw skill across multiple AI CLIs:
+### Manual raw skill install (any CLI, no marketplace)
 
 ```bash
 git clone https://github.com/victor-ferreira95/polypad.git
@@ -61,7 +31,7 @@ cd polypad
 bash scripts/install.sh
 ```
 
-The script detects which AI CLIs you have (Claude Code, Codex, Gemini, Cursor) and installs the skill into each.
+Detects installed AI CLIs and installs the skill into each.
 
 ## Use in a project
 
@@ -84,10 +54,9 @@ The script detects which AI CLIs you have (Claude Code, Codex, Gemini, Cursor) a
 - **Lazy load.** Agents read compressed headers first (~300 tokens); full narrative only if needed.
 - **Per-author compaction.** Each agent compacts its own blocks when it has more than 5.
 - **Auto-archive.** Napkins with blocks older than 3 days are auto-archived.
+- **Mechanical enforcement.** A Stop hook blocks the agent's response if it wrote code without updating the napkin.
 
 Typical cost: ~2-3k tokens per engaged turn. Trivial turns: zero.
-
-Use `/polypad:status` to check size and get archival recommendations.
 
 ## Commands
 
@@ -103,7 +72,7 @@ Use `/polypad:status` to check size and get archival recommendations.
 /plugin menu
 ```
 
-Navigate to `polypad`, select Uninstall. To remove the marketplace entirely:
+Select polypad, uninstall. Then optionally:
 
 ```
 /plugin marketplace remove polypad
@@ -111,17 +80,13 @@ Navigate to `polypad`, select Uninstall. To remove the marketplace entirely:
 
 ### Codex CLI
 
-```
-/plugins
-```
-
-Find polypad, uninstall. Or:
+Open `/plugins`, select polypad, uninstall. Then optionally:
 
 ```
 codex marketplace remove polypad
 ```
 
-### Manual (if installed via scripts/install.sh)
+### Manual
 
 ```bash
 rm -rf ~/.claude/skills/polypad
@@ -130,13 +95,9 @@ rm -rf ~/.gemini/skills/polypad
 rm -rf ~/.cursor/skills/polypad
 ```
 
-## Design principles
+## Contributing
 
-1. **Full read, isolated write.** Everyone sees everything. No one touches anyone else's blocks.
-2. **Lazy load.** Headers first. Narrative on demand.
-3. **User orchestrates.** Polypad has no opinion on who should do what.
-4. **No ceremony.** No tickets, specs, phases, or delegation protocols.
-5. **Cheap by default.** Trivial turns skip the napkin entirely.
+When editing the skill, edit in `skills/polypad/SKILL.md` (Claude Code side) and run `bash scripts/sync.sh` to propagate to Codex.
 
 ## License
 
