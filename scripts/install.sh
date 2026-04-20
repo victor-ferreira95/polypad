@@ -27,17 +27,35 @@ install_to() {
     installed_into+=("$label")
 }
 
+install_commands_to() {
+    local target="$1"
+    local label="$2"
+    mkdir -p "$target"
+    if [ -d "$target" ] && [ -n "$(ls -A "$target" 2>/dev/null)" ]; then
+        echo "  ↻ updating $label slash commands at $target"
+        rm -rf "$target"
+        mkdir -p "$target"
+    else
+        echo "  + installing $label slash commands at $target"
+    fi
+    cp "$SCRIPT_DIR/commands/"*.md "$target/"
+}
+
 if command -v claude >/dev/null 2>&1 || [ -d "$HOME/.claude" ]; then
     install_to "$HOME/.claude/skills/$SKILL_NAME" "Claude Code"
+    install_commands_to "$HOME/.claude/commands/$SKILL_NAME" "Claude Code"
 fi
 if command -v codex >/dev/null 2>&1 || [ -d "$HOME/.codex" ]; then
     install_to "$HOME/.codex/skills/$SKILL_NAME" "Codex CLI"
+    install_commands_to "$HOME/.codex/commands/$SKILL_NAME" "Codex CLI"
 fi
 if command -v gemini >/dev/null 2>&1 || [ -d "$HOME/.gemini" ]; then
     install_to "$HOME/.gemini/skills/$SKILL_NAME" "Gemini CLI"
+    install_commands_to "$HOME/.gemini/commands/$SKILL_NAME" "Gemini CLI"
 fi
 if [ -d "$HOME/.cursor" ]; then
     install_to "$HOME/.cursor/skills/$SKILL_NAME" "Cursor"
+    install_commands_to "$HOME/.cursor/commands/$SKILL_NAME" "Cursor"
 fi
 
 echo ""
@@ -48,9 +66,12 @@ fi
 
 echo "Installed polypad into: ${installed_into[*]}"
 echo ""
+echo "Slash commands now available: /polypad:init, /polypad:status, /polypad:archive"
+echo ""
 echo "Next steps:"
-echo "  1. In a repo, run /polypad:init to create the shared napkin."
-echo "  2. Add this snippet to CLAUDE.md / AGENTS.md / GEMINI.md:"
+echo "  1. Restart your CLI session so slash commands are picked up."
+echo "  2. In a repo, run /polypad:init to create the shared napkin."
+echo "  3. Add this snippet to CLAUDE.md / AGENTS.md / GEMINI.md:"
 echo ""
 echo "     ## Multi-agent coordination"
 echo "     This project uses the polypad protocol. For substantive work, read"
