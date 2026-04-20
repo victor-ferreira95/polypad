@@ -76,6 +76,37 @@ This renames `.agents/` → `.polypad/`, updates `.gitignore`, and rewrites snip
 - `/polypad:archive` — archive current napkin
 - `/polypad:migrate` — migrate from v0.2 `.agents/` to v0.3+ `.polypad/`
 
+## Uninstall
+
+### Claude Code
+
+```
+/plugin menu
+```
+
+Select polypad, uninstall. Then optionally:
+
+```
+/plugin marketplace remove polypad
+```
+
+### Codex CLI
+
+Open `/plugins`, select polypad, uninstall. Then optionally:
+
+```
+codex marketplace remove polypad
+```
+
+### Manual (if installed via scripts/install.sh)
+
+```bash
+rm -rf ~/.claude/skills/polypad
+rm -rf ~/.codex/skills/polypad
+rm -rf ~/.gemini/skills/polypad
+rm -rf ~/.cursor/skills/polypad
+```
+
 ## License
 
 MIT
