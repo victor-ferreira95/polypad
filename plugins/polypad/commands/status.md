@@ -5,7 +5,7 @@ description: Report polypad napkin size, age, and per-agent block counts; recomm
 Report the current state of the polypad napkin.
 
 Steps:
-1. If `.agents/napkin.md` does not exist, tell the user to run `/polypad:init` first.
+1. If `.polypad/napkin.md` does not exist, tell the user to run `/polypad:init` first.
 2. Compute and report:
 
 **Size:**

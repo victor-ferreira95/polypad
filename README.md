@@ -1,8 +1,10 @@
 # polypad
 
-Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor — all read and write the same `.agents/napkin.md`, with strict write-isolation so no agent ever overwrites another.
+Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor — all read and write the same `.polypad/napkin.md`, with strict write-isolation so no agent ever overwrites another.
 
 **The user orchestrates. Polypad remembers.**
+
+> **v0.3 breaking change:** the plugin directory was renamed from `.agents/` to `.polypad/`. If you're upgrading from v0.2, run `/polypad:migrate` once per project.
 
 ## Install
 
@@ -13,7 +15,7 @@ Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI
 /plugin menu
 ```
 
-Select `polypad`, then choose the scope: user / project / local.
+Select `polypad`, choose scope (user/project/local).
 
 ### Codex CLI
 
@@ -21,9 +23,15 @@ Select `polypad`, then choose the scope: user / project / local.
 codex marketplace add victor-ferreira95/polypad
 ```
 
-Then open `/plugins` inside Codex, select Polypad, and install.
+Then inside Codex:
 
-### Manual raw skill install (any CLI, no marketplace)
+```
+/plugins
+```
+
+Select Polypad, install.
+
+### Manual raw skill install
 
 ```bash
 git clone https://github.com/victor-ferreira95/polypad.git
@@ -31,92 +39,42 @@ cd polypad
 bash scripts/install.sh
 ```
 
-Detects installed AI CLIs and installs the skill into each.
-
 ## Use in a project
 
-1. Run `/polypad:init` from any agent. You'll be asked which versioning mode to use:
+1. Run `/polypad:init`. You'll be asked two questions:
 
-   - **Shared via git (default)** — `.agents/napkin.md` is committed, teammates share context across machines.
-   - **Local only** — `.agents/` is gitignored, each developer has their own napkin.
+   **Versioning mode:**
+   - **Shared via git (default)** — `.polypad/napkin.md` is committed, teammates share context across machines.
+   - **Local only** — `.polypad/` is gitignored, each dev has their own napkin.
 
-2. Paste this into your repo's `CLAUDE.md` / `AGENTS.md` / `GEMINI.md`:
+   **Which CLIs will work in this repo:** Claude Code / Codex CLI / Gemini CLI / Cursor. The snippet is added to the respective file (`CLAUDE.md` / `AGENTS.md` / `GEMINI.md` / `.cursorrules`).
 
-   ```
-   ## Multi-agent coordination
+2. Start working. Agents read the napkin before substantive tasks and write their notes after.
 
-   This project uses the polypad protocol. For substantive work, read
-   .agents/napkin.md (headers first), then append your block under your
-   tag. Never edit blocks you didn't author.
-   ```
+## Migrating from v0.2
 
-3. Start working. Agents read the napkin before substantive tasks and write their notes after.
+If your project has `.agents/napkin.md` from v0.2, run:
 
-### Which versioning mode should I pick?
-
-- You work alone, across multiple CLIs on the same machine → **local**
-- You work with a team, anyone might open the repo from any machine → **shared**
-- You're not sure → start with **shared** (the default). You can always add `.agents/` to `.gitignore` later.
-
-In shared mode, commit the napkin like any other file:
-
-```bash
-git add .agents/napkin.md
-git commit -m "polypad: update napkin"
+```
+/polypad:migrate
 ```
 
-Your teammates see your context when they pull.
+This renames `.agents/` → `.polypad/`, updates `.gitignore`, and rewrites snippet paths in your CLI files. Commit the result.
 
 ## Token economy
 
-- **Skip on trivial turns.** Factual questions don't engage the napkin.
-- **Lazy load.** Agents read compressed headers first (~300 tokens); full narrative only if needed.
-- **Per-author compaction.** Each agent compacts its own blocks when it has more than 5.
-- **Auto-archive.** Napkins with blocks older than 3 days are auto-archived.
-- **Mechanical enforcement.** A Stop hook blocks the agent's response if it wrote code without updating the napkin.
-
-Typical cost: ~2-3k tokens per engaged turn. Trivial turns: zero.
+- Skip on trivial turns
+- Lazy load: headers first, narrative on demand
+- Per-author compaction at >5 blocks
+- Auto-archive after 3 days
+- Stop hook mechanical enforcement
 
 ## Commands
 
 - `/polypad:init` — initialize in current repo
-- `/polypad:status` — show size, age, block counts per agent
-- `/polypad:archive` — archive current napkin, carry headers forward
-
-## Uninstall
-
-### Claude Code
-
-```
-/plugin menu
-```
-
-Select polypad, uninstall. Then optionally:
-
-```
-/plugin marketplace remove polypad
-```
-
-### Codex CLI
-
-Open `/plugins`, select polypad, uninstall. Then optionally:
-
-```
-codex marketplace remove polypad
-```
-
-### Manual
-
-```bash
-rm -rf ~/.claude/skills/polypad
-rm -rf ~/.codex/skills/polypad
-rm -rf ~/.gemini/skills/polypad
-rm -rf ~/.cursor/skills/polypad
-```
-
-## Contributing
-
-Edit `plugins/polypad/` (Claude Code side). Run `bash scripts/sync.sh` to propagate to `.codex/plugins/polypad/`.
+- `/polypad:status` — size, age, block counts
+- `/polypad:archive` — archive current napkin
+- `/polypad:migrate` — migrate from v0.2 `.agents/` to v0.3+ `.polypad/`
 
 ## License
 

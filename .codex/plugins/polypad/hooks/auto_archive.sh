@@ -4,8 +4,8 @@
 
 set -euo pipefail
 
-NAPKIN=".agents/napkin.md"
-ARCHIVE_DIR=".agents/archive"
+NAPKIN=".polypad/napkin.md"
+ARCHIVE_DIR=".polypad/archive"
 MAX_AGE_DAYS=3
 
 [ ! -f "$NAPKIN" ] && exit 0

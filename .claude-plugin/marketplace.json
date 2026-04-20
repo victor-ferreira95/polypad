@@ -9,7 +9,7 @@
       "name": "polypad",
       "source": "./plugins/polypad",
       "description": "Universal shared napkin for AI coding agents with mechanical Stop-hook enforcement",
-      "version": "0.2.0",
+      "version": "0.3.0",
       "category": "workflow",
       "keywords": ["multi-agent", "collaboration", "shared-context", "napkin"],
       "strict": false

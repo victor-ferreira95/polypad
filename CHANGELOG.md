@@ -1,5 +1,23 @@
 # Changelog
 
+## [0.3.0] - 2026-04-19
+
+### Breaking changes
+
+- **Renamed `.agents/` to `.polypad/`** in all user-facing paths to avoid namespace conflicts with other agent frameworks and to make the plugin's files clearly identifiable. Users on v0.2 must run `/polypad:migrate` once after upgrading.
+
+### Added
+
+- `/polypad:migrate` command for one-shot migration from v0.2 layout.
+- Multi-CLI selection in `/polypad:init` — user picks which CLIs will coordinate via polypad, and the engagement snippet is written to the chosen CLI files (CLAUDE.md, AGENTS.md, GEMINI.md, .cursorrules).
+- Engagement snippets now use `<!-- polypad:start -->` / `<!-- polypad:end -->` markers for idempotent re-runs.
+- Snippet content updated to reflect v0.2 enforcement semantics (Stop hook, decision rule, bootstrap).
+
+### Changed
+
+- All hooks (`stop_check.sh`, `auto_archive.sh`) updated to read from `.polypad/` instead of `.agents/`.
+- Stop hook detects legacy `.agents/` layout and asks the user to run `/polypad:migrate`.
+
 ## [0.2.0] - 2026-04-19
 
 ### Added
