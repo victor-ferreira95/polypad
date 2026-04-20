@@ -145,6 +145,15 @@ If this is your first time writing to this napkin:
 - `/polypad:status` — report napkin size, age, and per-agent block counts.
 - `/polypad:archive` — manually archive the current napkin, preserving agent headers.
 
+**Installation note:** for these to appear as native slash commands, the files in `commands/` MUST be copied to each detected agent's commands directory (in addition to the skill directory). The `scripts/install.sh` handles this automatically for every CLI it finds:
+
+- Claude Code → `~/.claude/commands/polypad/`
+- Codex CLI → `~/.codex/commands/polypad/`
+- Gemini CLI → `~/.gemini/commands/polypad/`
+- Cursor → `~/.cursor/commands/polypad/`
+
+If a new agent CLI is added, the installer must replicate both: `~/.<cli>/skills/polypad/` (skill body) and `~/.<cli>/commands/polypad/` (slash commands). Without the commands copy, `/polypad:init` etc. will not appear in the CLI menu — only the skill itself will be triggerable by natural language.
+
 ## Auto-archive of stale napkins
 
 If the oldest narrative block is **older than 3 days**, archive before doing anything else:
