@@ -1,60 +1,80 @@
 ---
 name: polypad
-description: Shared append-only napkin for coordinating any number of AI coding agents (Claude Code, Codex CLI, Gemini CLI, Cursor, and others that follow the open SKILL.md standard) working on the same codebase. Use this skill whenever the user is running a multi-agent workflow, mentions polypad, asks to share context across AI assistants, or is about to do substantive coding/planning/writing work in a repository that contains an `.agents/napkin.md` file. The skill is a lightweight scratchpad, not a task manager — each agent reads what the others thought and did, then appends its own notes. Write-isolation is strict (agents only edit their own blocks) and compaction is automatic per-author.
+description: Shared append-only napkin for coordinating any number of AI coding agents (Claude Code, Codex CLI, Gemini CLI, Cursor, and others that follow the open SKILL.md standard) working on the same codebase. Engage this skill on EVERY turn that uses Write, Edit, or any file/code creation tool — the decision is mechanical and non-optional. Each agent reads what the others thought and did, then appends its own block. Write-isolation is strict (agents only edit their own blocks), compaction is automatic per-author, and a Stop hook enforces the protocol at the end of each turn.
 ---
 
 # Polypad
 
-A universal shared-memory napkin for AI coding agents. One file, any number of agents, strict write-isolation, automatic per-author compaction, and aggressive token economy.
+A universal shared-memory napkin for AI coding agents. One file, any number of agents, strict write-isolation, automatic per-author compaction, token-efficient lazy loading, and **mechanical enforcement** at turn end.
 
-Philosophy: **full read, isolated write, lazy load.** Every agent can see everything any other agent thought or did. Each agent only writes under its own tag. The user is the orchestrator — polypad is just memory.
+Philosophy: **full read, isolated write, lazy load, enforced checkpoint.**
 
-## Step 1: Decide whether to engage at all (token economy rule)
+## Decision rule (do not skip this check)
 
-Polypad exists to share context for **substantive work**. Do not engage it for trivial exchanges.
+Before responding, answer one yes/no question:
 
-**Engage polypad when the user's turn involves:**
-- Writing, refactoring, or reviewing code
-- Architectural or design decisions
-- Implementing a feature, fixing a bug, or validating another agent's output
-- Anything another agent might benefit from knowing later
+> **"Did this turn include a Write, Edit, NotebookEdit, or any file/code creation tool call?"**
 
-**Skip polypad when:**
-- Answering a factual question ("how does X work?")
-- Casual chat or meta-questions about the conversation
-- Tiny one-liner edits the user directly dictates
-- Read-only exploration ("show me file Y")
+- **YES** → Engage polypad. Read the napkin (headers first), do your work, write a block before finishing the turn. **Not optional.**
+- **NO** → This is a read-only turn (Q&A, explanation, search, listing). Skip the napkin entirely. Zero cost.
 
-If you skip, do not read the napkin and do not write a block. Proceed normally. This keeps token cost zero on light turns.
+There is no "borderline" category. The check is mechanical: look at what tools you called. If any wrote to disk, you engage.
 
-## Step 2: Identify yourself
+A Stop hook at the end of the turn will check whether you complied. If you wrote code and did not update `.agents/napkin.md`, the hook will block your response and force you to go back and write a block.
 
-Before reading or writing, determine your author tag. Check `.agents/.identity` in the repo (a one-line file with your tag). If it doesn't exist:
+## Empty napkin is not an excuse
 
-1. Detect from environment: `CLAUDE_CODE=1` → `claude`, `CODEX_CLI=1` → `codex`, `GEMINI_CLI=1` → `gemini`, etc.
-2. If unclear, ask the user: "Which tag should I use in the polypad? (suggested: claude)"
-3. Save the chosen tag to `.agents/.identity`. This file is gitignored — each agent instance has its own identity locally.
+An empty napkin (no narrative blocks, only headers or blank file) means **you are the first agent**. This is the most common state for a new repo.
 
-Tags are lowercase slugs: `claude`, `codex`, `gemini`, `cursor`, `claude-opus`, `claude-sonnet`, etc.
+Do not interpret emptiness as "no context to engage with". Interpret it as "**I am the one creating the context.**"
 
-## Step 3: Lazy read — headers first, expand on demand
+On an empty napkin, when your turn involves writes:
+
+1. If `.agents/napkin.md` doesn't exist → create it (copy `templates/napkin.md`).
+2. If your agent tag has no header in the napkin → add `## [<your-tag> · notes] updated not yet` at the top of the headers section.
+3. Do the user's task.
+4. Write your first narrative block before the turn ends.
+
+The bootstrap responsibility is on the first agent. Do not leave an empty napkin after a substantive turn.
+
+## Cumulative thinking (anti salami-slicing)
+
+A single turn can contain many small edits. **Do not evaluate each edit individually** for "is this worth a block?". Evaluate the entire turn as one unit:
+
+> "Did I change the codebase in any way during this turn that another agent would benefit from knowing?"
+
+If yes → **one consolidated block** at the end of the turn, summarizing the turn's net outcome. Not N tiny blocks.
+
+Block content should describe the outcome ("implemented X with approach Y, commit Z"), not narrate each tool call ("ran Write on file A, then Edit on file B").
+
+## Step 1: Identify yourself
+
+Determine your author tag. Check `.agents/.identity` (one-line file, gitignored). If missing:
+
+1. Detect from environment: `CLAUDE_CODE=1` → `claude`, `CODEX_CLI=1` → `codex`, `GEMINI_CLI=1` → `gemini`.
+2. If unclear, ask the user once: "Which tag should I use in the polypad? (suggested: claude)"
+3. Save to `.agents/.identity`.
+
+Tags are lowercase slugs: `claude`, `codex`, `gemini`, `cursor`, `claude-opus`, `claude-sonnet`.
+
+## Step 2: Lazy read — headers first
 
 Do **not** load the full napkin by default. Load progressively:
 
-**Pass 1 (always, cheap):** read only the headers section — everything from the top of `.agents/napkin.md` down to the first `---` separator line. This gives you each agent's compressed self-summary. Typically 20-50 lines total.
+**Pass 1 (always, cheap):** read only the headers section — everything from the top of `.agents/napkin.md` down to the first `---` separator line. ~300 tokens typically.
 
-Implementation: `sed -n '1,/^---$/p' .agents/napkin.md` or read with a line limit and stop at the separator.
+Implementation: `sed -n '1,/^---$/p' .agents/napkin.md` or bounded read.
 
-**Pass 2 (conditional):** after reading headers, decide if the narrative section is relevant to what the user just asked. Expand to the narrative section **only if**:
-- You need specifics about a recent decision mentioned in a header
-- The user's request references something "we were working on"
-- Another agent's recent work directly affects what you're about to do
+**Pass 2 (conditional):** expand to the narrative section only if:
+- A header mentions something directly relevant to your current task
+- The user references earlier work ("continue with what we did")
+- Another agent's recent block affects what you're about to change
 
-If none apply, work from headers alone. This saves 60-80% of token cost on typical turns.
+If none apply, work from headers alone.
 
-**Pass 3 (rare):** read archived napkins in `.agents/archive/` only when the user explicitly asks for historical context.
+**Pass 3 (rare):** read `.agents/archive/*.md` only when the user explicitly asks for historical context.
 
-## Step 4: Napkin anatomy
+## Step 3: Napkin anatomy
 
 ```markdown
 # napkin
@@ -83,29 +103,27 @@ pt-BR matching the app's informal "você" tone.
 Files: resources/lang/pt_BR/auth.php
 ```
 
-**Headers section** (above the first `---`): one `## [<tag> · notes]` per agent that has ever written. Each is that agent's compressed self-history. Only the owning agent edits its own header.
+**Headers section** (above first `---`): one `## [<tag> · notes]` per agent. Only the owning agent edits its own header.
 
-**Narrative section** (below the first `---`): append-only blocks. Any agent can add a block. No agent ever edits a block authored by someone else.
+**Narrative section** (below first `---`): append-only blocks. Any agent appends. No agent ever edits a block authored by someone else.
 
-A blank template is in `templates/napkin.md`.
+## Step 4: Before writing, compact your own blocks
 
-## Step 5: Before writing, compact your own blocks
+Per-author, never cross-author.
 
-Compaction is **per-author, never cross-author**.
-
-1. Count narrative blocks with your tag: `grep -c '^## \[<your-tag>\]' .agents/napkin.md` (counts only blocks, not your header).
-2. If the count is **greater than 5**, compact:
+1. Count narrative blocks with your tag.
+2. If count > 5, compact:
    - Keep your 2 most recent narrative blocks untouched.
-   - For each older block of yours: condense into one bullet (timestamp + one-line summary) and prepend to your `## [<you> · notes]` header at the top.
-   - Remove those older narrative blocks from the file.
-   - Update the `updated` timestamp in your header.
-3. Only then proceed to write your new block.
+   - Condense older blocks into bullets in your header (timestamp + one-line).
+   - Remove those older blocks from narrative.
+   - Update `updated` timestamp.
+3. Only then write your new block.
 
-If another agent has 20 uncompacted blocks, **leave them alone**. Their mess, their responsibility. Write-isolation is absolute.
+If another agent has 20 uncompacted blocks, leave them alone. Their mess, their responsibility.
 
-## Step 6: Write your block
+## Step 5: Write your block
 
-Append at the end of the file, preceded by `---` on its own line.
+Append at the end, preceded by `---` on its own line.
 
 ```markdown
 
@@ -113,82 +131,55 @@ Append at the end of the file, preceded by `---` on its own line.
 
 ## [<you>] YYYY-MM-DD HH:MM
 
-<what you thought, what you did, what you decided, any handoff notes>
+<3-10 lines: what you did, key decisions, file paths, commit hashes, handoff notes>
 ```
 
-Use `date "+%Y-%m-%d %H:%M"` for the timestamp in the user's local time.
+Use `date "+%Y-%m-%d %H:%M"` for timestamps.
 
-**Block content guidelines:**
-- Be concise. 3-10 lines is typical. Block is a record, not documentation.
-- Reference other agents' blocks by timestamp, never by copying their content. Example: "per codex's block at 15:12, migration is live."
-- Include commit hashes, file paths, or ticket IDs when relevant — they're cheap signals for the next agent.
-- Don't use standardized "phase" labels. Just write what happened in plain prose.
+Reference other agents by timestamp, never copy their content. Example: "per codex's block at 15:12, migration is live."
 
-## Step 7: Create your header if it's your first time
+## Step 6: If first time writing
 
-If this is your first time writing to this napkin:
-- Add a `## [<your-tag> · notes] updated not yet` line to the headers section (above the first `---`).
-- Your first narrative block counts as one block toward the compaction threshold.
+Add `## [<your-tag> · notes] updated not yet` to the headers section. Your first narrative block counts as one block toward the compaction threshold.
 
 ## Hard rules
 
-1. **Write-isolation is absolute.** Never edit a line inside another agent's header or block. Ever. For any reason.
-2. **Narrative is append-only.** Past blocks are record. They only leave via their author compacting them into their own header.
-3. **Timestamps are mandatory.** Every block and every header update carries `YYYY-MM-DD HH:MM`.
-4. **Lazy load.** Headers-first, narrative on demand, archive only if asked.
-5. **Engage only for substantive turns.** Trivial turns skip polypad entirely.
-6. **Reference, don't reproduce.** Point at other agents' work via timestamps.
+1. **Decision rule is mechanical.** Write/Edit called = engage. No exceptions.
+2. **Write-isolation is absolute.** Never edit another agent's header or block.
+3. **Narrative is append-only.** Blocks leave via author compacting into own header.
+4. **Timestamps mandatory.** Every block and header update carries `YYYY-MM-DD HH:MM`.
+5. **Lazy load.** Headers first, narrative on demand.
+6. **Reference, don't reproduce.** Point at other agents' blocks by timestamp.
+7. **Consolidated blocks, not salami slices.** One block per turn, summarizing net outcome.
+8. **First agent bootstraps.** Empty napkin is a call to action, not a pass.
 
 ## Slash commands
 
-- `/polypad:init` — create `.agents/napkin.md` in the current repo.
-- `/polypad:status` — report napkin size, age, and per-agent block counts.
-- `/polypad:archive` — manually archive the current napkin, preserving agent headers.
-
-**Installation note:** for these to appear as native slash commands, the files in `commands/` MUST be copied to each detected agent's commands directory (in addition to the skill directory). The `scripts/install.sh` handles this automatically for every CLI it finds:
-
-- Claude Code → `~/.claude/commands/polypad/`
-- Codex CLI → `~/.codex/commands/polypad/`
-- Gemini CLI → `~/.gemini/commands/polypad/`
-- Cursor → `~/.cursor/commands/polypad/`
-
-If a new agent CLI is added, the installer must replicate both: `~/.<cli>/skills/polypad/` (skill body) and `~/.<cli>/commands/polypad/` (slash commands). Without the commands copy, `/polypad:init` etc. will not appear in the CLI menu — only the skill itself will be triggerable by natural language.
+- `/polypad:init` — create `.agents/napkin.md` in the current repo
+- `/polypad:status` — size, age, per-agent block counts
+- `/polypad:archive` — archive the napkin, carry headers forward
 
 ## Auto-archive of stale napkins
 
-If the oldest narrative block is **older than 3 days**, archive before doing anything else:
+If the oldest narrative block is older than 3 days, archive before doing anything else. Copy `.agents/napkin.md` to `.agents/archive/napkin-YYYY-MM-DD.md`, rebuild napkin with headers only. The `hooks/auto_archive.sh` automates this.
 
-1. Copy `.agents/napkin.md` to `.agents/archive/napkin-YYYY-MM-DD.md`.
-2. Create a new `.agents/napkin.md` containing:
-   - Comment: `<!-- started YYYY-MM-DD, previous archived to .agents/archive/napkin-YYYY-MM-DD.md -->`
-   - All agent headers copied over verbatim.
-   - `---` separator.
-   - Empty narrative section.
-3. Inform the user: "Archived previous napkin (N days old). Fresh narrative, all agent summaries carried forward."
-4. Proceed with the user's request.
+## Stop hook enforcement
 
-A `hooks/auto_archive.sh` is included for CLIs that support pre-session hooks; otherwise the agent does it on first engagement.
+This plugin ships `hooks/stop_check.sh`, which runs at the end of every agent turn in Claude Code (via the `Stop` event) and equivalent hook in Codex. The hook checks:
 
-## Status check logic
+1. Did any Write/Edit/create tool run this turn?
+2. Did `.agents/napkin.md` change this turn?
 
-When the user runs `/polypad:status`, report:
+If (1) is true and (2) is false, the hook blocks the response and injects into the agent's context:
 
-1. **Size:** total lines, approximate tokens (lines × ~10).
-2. **Recommendation:** if tokens > 5000, recommend `/polypad:archive`.
-3. **Age:** oldest narrative block timestamp; flag if > 3 days.
-4. **Per-agent block counts:** flag any agent at > 5 blocks (will compact on next write).
+> **POLYPAD PROTOCOL VIOLATION: you wrote code this turn but did not update `.agents/napkin.md`. Write a block now before responding to the user.**
 
-Example output:
-```
-napkin: 847 lines, ~8.5k tokens — consider /polypad:archive
-oldest block: 2026-04-16 (3 days old) — auto-archive will trigger
-blocks per agent: claude=4, codex=7 (will compact), gemini=1
-```
+This is not an advisory message — the hook returns a non-zero exit and Claude Code/Codex re-runs the agent with the violation in context. Passes through cleanly when the protocol was followed.
 
 ## When NOT to use polypad
 
-- Solo agent, no handoffs: overhead for no gain.
-- Throwaway scripts or one-off fixes: skip the ceremony.
-- Real-time synchronous pair-programming between two agents: use direct tool-to-tool delegation instead.
+- Solo agent with no handoffs ever: overhead without benefit.
+- Throwaway scripts, one-off fixes: skip the ceremony.
+- Real-time synchronous agent-to-agent delegation (use `codex-plugin-cc` for that).
 
-Polypad shines when multiple agents work asynchronously on the same repo across sessions, and you want their context to survive `/clear`, agent restarts, and terminal closings.
+Polypad shines when multiple agents work asynchronously on the same repo across sessions, and context must survive `/clear`, restarts, and terminal closings.

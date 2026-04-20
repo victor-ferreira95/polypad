@@ -1,12 +1,25 @@
 {
   "name": "polypad",
-  "version": "0.1.0",
-  "description": "Shared append-only napkin for coordinating AI coding agents",
+  "version": "0.2.0",
+  "description": "Shared append-only napkin for coordinating AI coding agents, with mechanical Stop-hook enforcement",
   "author": {
     "name": "Victor Ferreira",
     "url": "https://github.com/victor-ferreira95"
   },
   "homepage": "https://github.com/victor-ferreira95/polypad",
   "license": "MIT",
-  "keywords": ["multi-agent", "collaboration", "shared-context"]
+  "keywords": ["multi-agent", "collaboration", "shared-context", "napkin", "enforcement"],
+  "hooks": {
+    "Stop": [
+      {
+        "matcher": ".*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop_check.sh"
+          }
+        ]
+      }
+    ]
+  }
 }

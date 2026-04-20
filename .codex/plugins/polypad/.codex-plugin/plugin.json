@@ -1,7 +1,7 @@
 {
   "name": "polypad",
-  "version": "0.1.0",
-  "description": "Shared append-only napkin for coordinating AI coding agents",
+  "version": "0.2.0",
+  "description": "Shared append-only napkin for coordinating AI coding agents, with mechanical Stop-hook enforcement",
   "author": {
     "name": "Victor Ferreira",
     "url": "https://github.com/victor-ferreira95"
@@ -9,12 +9,13 @@
   "homepage": "https://github.com/victor-ferreira95/polypad",
   "repository": "https://github.com/victor-ferreira95/polypad",
   "license": "MIT",
-  "keywords": ["multi-agent", "collaboration", "shared-context", "napkin"],
+  "keywords": ["multi-agent", "collaboration", "shared-context", "napkin", "enforcement"],
   "skills": "./skills/",
+  "hooks": "./hooks/hooks.json",
   "interface": {
     "displayName": "Polypad",
-    "shortDescription": "Shared napkin for coordinating AI coding agents",
-    "longDescription": "Universal shared napkin that lets Claude Code, Codex CLI, Gemini CLI, Cursor and other agents coordinate via one markdown file with strict write-isolation.",
+    "shortDescription": "Shared napkin with mechanical enforcement across AI agents",
+    "longDescription": "Universal shared napkin. Every agent sees everything, only edits its own blocks, and a Stop hook blocks the response if the agent writes code without updating the napkin.",
     "developerName": "Victor Ferreira",
     "category": "Productivity",
     "capabilities": ["Read", "Write"],
