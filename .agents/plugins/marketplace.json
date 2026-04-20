@@ -1,0 +1,20 @@
+{
+  "name": "polypad",
+  "interface": {
+    "displayName": "Polypad"
+  },
+  "plugins": [
+    {
+      "name": "polypad",
+      "source": {
+        "source": "local",
+        "path": "./.codex/plugins/polypad"
+      },
+      "policy": {
+        "installation": "AVAILABLE",
+        "authentication": "ON_INSTALL"
+      },
+      "category": "Productivity"
+    }
+  ]
+}

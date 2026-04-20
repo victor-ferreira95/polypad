@@ -22,7 +22,7 @@ It's one markdown file with blocks. That's it.
 
 ## Installation
 
-### Claude Code (recommended)
+### Claude Code
 
 ```
 /plugin marketplace add victor-ferreira95/polypad
@@ -37,9 +37,23 @@ Select `polypad` from the menu, then choose the scope:
 
 Restart Claude Code after install.
 
-### Manual install (without marketplace)
+### Codex CLI
 
-If you prefer to install as a raw skill across multiple AI CLIs (Claude Code, Codex CLI, Gemini CLI, Cursor):
+```
+codex marketplace add victor-ferreira95/polypad
+```
+
+Then open the plugin directory and install Polypad:
+
+```
+/plugins
+```
+
+Select `polypad` and install. Restart Codex after install.
+
+### Manual install (all CLIs, without marketplace)
+
+If you prefer to install as a raw skill across multiple AI CLIs:
 
 ```bash
 git clone https://github.com/victor-ferreira95/polypad.git
@@ -47,7 +61,7 @@ cd polypad
 bash scripts/install.sh
 ```
 
-The script detects which AI CLIs you have and installs the skill into each.
+The script detects which AI CLIs you have (Claude Code, Codex, Gemini, Cursor) and installs the skill into each.
 
 ## Use in a project
 
@@ -83,17 +97,31 @@ Use `/polypad:status` to check size and get archival recommendations.
 
 ## Uninstall
 
+### Claude Code
+
 ```
 /plugin menu
 ```
 
-Navigate to `polypad`, then select Uninstall. Or remove the marketplace entirely:
+Navigate to `polypad`, select Uninstall. To remove the marketplace entirely:
 
 ```
 /plugin marketplace remove polypad
 ```
 
-If you installed manually via `scripts/install.sh`:
+### Codex CLI
+
+```
+/plugins
+```
+
+Find polypad, uninstall. Or:
+
+```
+codex marketplace remove polypad
+```
+
+### Manual (if installed via scripts/install.sh)
 
 ```bash
 rm -rf ~/.claude/skills/polypad
