@@ -97,7 +97,7 @@ rm -rf ~/.cursor/skills/polypad
 
 ## Contributing
 
-When editing the skill, edit in `skills/polypad/SKILL.md` (Claude Code side) and run `bash scripts/sync.sh` to propagate to Codex.
+Edit `plugins/polypad/` (Claude Code side). Run `bash scripts/sync.sh` to propagate to `.codex/plugins/polypad/`.
 
 ## License
 

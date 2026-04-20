@@ -1,12 +1,11 @@
 #!/usr/bin/env bash
-# polypad universal installer (manual raw skill install, no marketplace)
-# Detects installed AI CLIs and copies the skill into each one's skills directory.
+# polypad raw skill installer (bypass marketplace, install directly to ~/.<cli>/skills/).
 
 set -euo pipefail
 
 SKILL_NAME="polypad"
 REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-CLAUDE_SOURCE="$REPO_ROOT/skills/polypad"
+CLAUDE_SOURCE="$REPO_ROOT/plugins/polypad/skills/polypad"
 CODEX_SOURCE="$REPO_ROOT/.codex/plugins/polypad/skills/polypad"
 
 echo "polypad installer"
@@ -47,9 +46,4 @@ if [ ${#installed_into[@]} -eq 0 ]; then
     echo "No supported AI CLIs detected."
     exit 1
 fi
-
 echo "Installed polypad into: ${installed_into[*]}"
-echo ""
-echo "Next steps:"
-echo "  1. Restart your AI CLI(s)."
-echo "  2. In a repo, run /polypad:init to create the shared napkin."
