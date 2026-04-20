@@ -1,6 +1,6 @@
 # polypad
 
-A universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor, and any other tool following the open SKILL.md spec can read and write the same file — with strict write-isolation so no agent ever overwrites another.
+Universal shared napkin for AI coding agents. Claude Code, Codex CLI, Gemini CLI, Cursor, and any other tool following the open SKILL.md spec can read and write the same file — with strict write-isolation so no agent ever overwrites another.
 
 **The user orchestrates. Polypad remembers.**
 
@@ -20,22 +20,34 @@ Not a task manager. Not a delegation protocol. No specs, no tickets, no phases.
 
 It's one markdown file with blocks. That's it.
 
-## Install
+## Installation
+
+### Claude Code (recommended)
+
+```
+/plugin marketplace add victor-ferreira95/polypad
+/plugin menu
+```
+
+Select `polypad` from the menu, then choose the scope:
+
+- **Install for you (user scope)** — available in all your projects
+- **Install for all collaborators on this repository (project scope)** — committed to the repo, shared with team
+- **Install for you, in this repo only (local scope)** — this repo only, not committed
+
+Restart Claude Code after install.
+
+### Manual install (without marketplace)
+
+If you prefer to install as a raw skill across multiple AI CLIs (Claude Code, Codex CLI, Gemini CLI, Cursor):
 
 ```bash
-git clone https://github.com/<you>/polypad.git
+git clone https://github.com/victor-ferreira95/polypad.git
 cd polypad
 bash scripts/install.sh
 ```
 
-The installer detects which AI CLIs you have and installs into each.
-
-### Manual install
-
-- **Claude Code:** `~/.claude/skills/polypad/`
-- **Codex CLI:** `~/.codex/skills/polypad/`
-- **Gemini CLI:** `~/.gemini/skills/polypad/`
-- **Cursor:** `~/.cursor/skills/polypad/`
+The script detects which AI CLIs you have and installs the skill into each.
 
 ## Use in a project
 
@@ -68,6 +80,27 @@ Use `/polypad:status` to check size and get archival recommendations.
 - `/polypad:init` — initialize in current repo
 - `/polypad:status` — show size, age, block counts per agent
 - `/polypad:archive` — archive current napkin, carry headers forward
+
+## Uninstall
+
+```
+/plugin menu
+```
+
+Navigate to `polypad`, then select Uninstall. Or remove the marketplace entirely:
+
+```
+/plugin marketplace remove polypad
+```
+
+If you installed manually via `scripts/install.sh`:
+
+```bash
+rm -rf ~/.claude/skills/polypad
+rm -rf ~/.codex/skills/polypad
+rm -rf ~/.gemini/skills/polypad
+rm -rf ~/.cursor/skills/polypad
+```
 
 ## Design principles
 
