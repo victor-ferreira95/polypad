@@ -7,7 +7,7 @@
   "plugins": [
     {
       "name": "polypad",
-      "source": "./plugins/polypad",
+      "source": ".",
       "description": "Universal shared napkin for AI coding agents — Claude, Codex, Gemini, and others coordinate via one markdown file",
       "version": "0.1.0",
       "category": "workflow",

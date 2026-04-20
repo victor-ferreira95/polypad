@@ -4,8 +4,7 @@
 set -euo pipefail
 
 SKILL_NAME="polypad"
-REPO_ROOT="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-SKILL_SOURCE="$REPO_ROOT/plugins/polypad"
+SKILL_SOURCE="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
 
 echo "polypad installer"
 echo "source: $SKILL_SOURCE"
