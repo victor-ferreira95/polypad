@@ -9,17 +9,5 @@
   "homepage": "https://github.com/victor-ferreira95/polypad",
   "license": "MIT",
   "keywords": ["multi-agent", "collaboration", "shared-context", "napkin", "enforcement"],
-  "hooks": {
-    "Stop": [
-      {
-        "matcher": ".*",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "${CLAUDE_PLUGIN_ROOT}/hooks/stop_check.sh"
-          }
-        ]
-      }
-    ]
-  }
+  "hooks": "./hooks/hooks.json"
 }
