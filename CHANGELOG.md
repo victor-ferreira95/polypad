@@ -1,5 +1,16 @@
 # Changelog
 
+## [0.3.1] - 2026-04-19
+
+### Fixed
+
+- `/polypad:init` is now idempotent and handles multi-CLI registration correctly. Previously, if a CLI initialized the project first (e.g., Codex), subsequent CLIs (e.g., Claude) could not register themselves because init aborted when the napkin already existed. Now the command detects per-CLI state and only creates what's missing, regardless of which CLI initialized the project first.
+
+### Changed
+
+- Removed the upfront "which CLIs will use this repo" question from `/polypad:init`. Each CLI now self-registers by running `/polypad:init` on its first use in the repo. This decouples the decision and makes onboarding new CLIs trivial.
+- Init output is now a per-CLI status report showing what was created vs already present.
+
 ## [0.3.0] - 2026-04-19
 
 ### Breaking changes
