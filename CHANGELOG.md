@@ -1,5 +1,20 @@
 # Changelog
 
+## [0.3.2] - 2026-04-19
+
+### Added
+
+- **Engagement rule (b) for non-obvious findings.** Read-only turns that produce diagnoses, root-cause analysis, architectural decisions, or code-navigation insights now engage the napkin — not just turns that write code. The previous single rule ("Write/Edit = engage") was too mechanical and missed valuable context. Rule (b) is semantic, applied by the agent using two concrete tests (rediscovery test and telephone test). See SKILL.md for examples of what engages vs what doesn't.
+
+### Changed
+
+- SKILL.md section "Decision rule" renamed to "Engagement rules" (plural) and split into (a) mechanical and (b) semantic.
+- New SKILL.md section "Examples of rule (b) engagement" with concrete cases to calibrate agent judgment.
+
+### Not changed
+
+- Stop hook (`stop_check.sh`) behavior. Rule (b) is semantic and can't be detected by the hook — it remains the agent's responsibility. Rule (a) continues to be hook-enforced exactly as before.
+
 ## [0.3.1] - 2026-04-19
 
 ### Fixed

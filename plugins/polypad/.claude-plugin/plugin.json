@@ -1,6 +1,6 @@
 {
   "name": "polypad",
-  "version": "0.3.1",
+  "version": "0.3.2",
   "description": "Shared append-only napkin for coordinating AI coding agents with mechanical Stop-hook enforcement",
   "author": {
     "name": "Victor Ferreira",

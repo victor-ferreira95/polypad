@@ -9,18 +9,80 @@ A universal shared-memory napkin for AI coding agents. One file, any number of a
 
 Philosophy: **full read, isolated write, lazy load, enforced checkpoint.**
 
-## Decision rule (do not skip this check)
+## Engagement rules
 
-Before responding, answer one yes/no question:
+Polypad has two engagement rules. Apply BOTH on every turn.
 
-> **"Did this turn include a Write, Edit, NotebookEdit, or any file/code creation tool call?"**
+### Rule (a) — Mechanical: any write engages
+
+Before responding, answer this yes/no question:
+
+> **"Did this turn include a Write, Edit, MultiEdit, NotebookEdit, or any file/code creation tool call?"**
 
 - **YES** → Engage polypad. Read the napkin (headers first), do your work, write a block before finishing the turn. **Not optional.**
-- **NO** → This is a read-only turn (Q&A, explanation, search, listing). Skip the napkin entirely. Zero cost.
+- **NO** → Skip rule (a). Move to rule (b).
 
-There is no "borderline" category. The check is mechanical: look at what tools you called. If any wrote to disk, you engage.
+This rule is enforced mechanically by a Stop hook. If you called write/edit tools and did not update `.polypad/napkin.md`, the hook blocks your response and forces you to write a block before replying.
 
-A Stop hook at the end of the turn will check whether you complied. If you wrote code and did not update `.polypad/napkin.md`, the hook will block your response and force you to go back and write a block.
+### Rule (b) — Semantic: non-obvious findings engage
+
+Even if you didn't write any file, engage polypad when this turn produced a **non-obvious finding** that another agent (or you tomorrow) would benefit from knowing.
+
+Two tests to decide:
+
+1. **Rediscovery test:** "If another agent (or me tomorrow) asks the same question in this repo, will they have to redo this work from scratch?"
+2. **Telephone test:** "If I had to hand off this conversation to another agent right now, what would they need to know that isn't already visible in the code or git log?"
+
+If rule (b) applies, engage polypad **even on read-only turns**:
+- Read the napkin headers.
+- Write a short block summarizing the finding.
+- Then respond to the user.
+
+Rule (b) is **not** enforced by the hook — it requires semantic judgment that the hook can't make. You are responsible for applying it yourself. Use the two tests as a check before finishing read-only turns.
+
+### What NOT to engage for
+
+Neither rule applies to:
+- Factual Q&A with obvious answers ("what does this function do?" when the function is self-explanatory)
+- Simple code explanation that another agent would produce the same way in seconds
+- Formatting questions, syntax lookups, trivia
+- Listing files, showing status, answering "where is X defined" when the answer is a one-line find
+
+When in doubt, ask the rediscovery test: if the next agent would redo the work in under 30 seconds, skip. Otherwise, engage.
+
+## Examples of rule (b) engagement
+
+These are read-only turns (no Write/Edit) that SHOULD engage the napkin because they produce persistent knowledge:
+
+**Environment diagnostics**
+- "The `.http` files in apps/api return 503 because the API wasn't running. Start with `pnpm run api:dev` before executing them."
+- "Redis must be up locally for the auth flow to work. Not documented anywhere yet."
+
+**Root-cause analysis**
+- "The 404 on `/leads/:id` is because the route is registered in `routes/internal.php`, not `routes/api.php`. Anyone looking in `api.php` first will be confused."
+- "N+1 query in the dashboard comes from `resolveLeadOwner()` — eager-loading `owner` on the base query fixes it."
+
+**Architectural decisions**
+- "User and team agreed to go with Fortify instead of Sanctum for auth. Reason: existing LeadGuard integration is cleaner to extend via Fortify actions."
+- "Decided webhooks stay synchronous for now; no queue yet because traffic doesn't justify it."
+
+**Code navigation insights**
+- "Authentication actually lives in `app/Guards/LeadGuard.php`, not `config/auth.php`. The config just points to it."
+- "The pricing engine is in `domain/Pricing/`, but the actual discount rules are data-driven in `config/discounts.php`."
+
+These are read-only turns that should NOT engage:
+
+**Trivial Q&A**
+- "What does `array_map` do?" → well-documented, skip.
+- "Show me the current branch name" → one command, skip.
+
+**Obvious answers**
+- "What's in this file?" → user can read it themselves, skip unless you synthesize something non-obvious.
+
+**Pure formatting or style**
+- "Is this code following PSR-12?" → style check, skip.
+
+The rule of thumb: **if explaining the finding takes longer than rediscovering it, skip. If rediscovering it would take minutes or longer, engage.**
 
 ## Empty napkin is not an excuse
 
@@ -169,7 +231,7 @@ Add `## [<your-tag> · notes] updated not yet` to the headers section. Your firs
 
 ## Hard rules
 
-1. **Decision rule is mechanical.** Write/Edit called = engage. No exceptions.
+1. **Two engagement rules apply.** Rule (a): Write/Edit called = engage (mechanical, hook-enforced). Rule (b): non-obvious finding produced = engage (semantic, your responsibility).
 2. **Write-isolation is absolute.** Never edit another agent's header or block.
 3. **Narrative is append-only.** Blocks leave via author compacting into own header.
 4. **Timestamps mandatory.** Every block and header update carries `YYYY-MM-DD HH:MM`.
